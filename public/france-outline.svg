@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 700">
+  <!-- Simplified France metropolitan outline -->
+  <path 
+    d="M 400 50 
+       L 480 60 
+       L 550 80 
+       L 620 100 
+       L 680 150 
+       L 720 220 
+       L 740 300 
+       L 730 380 
+       L 700 450 
+       L 650 500 
+       L 580 540 
+       L 500 560 
+       L 420 570 
+       L 350 560 
+       L 280 530 
+       L 220 480 
+       L 180 420 
+       L 150 350 
+       L 140 280 
+       L 150 210 
+       L 180 150 
+       L 230 100 
+       L 300 70 
+       L 360 55 
+       Z" 
+    fill="#27272a" 
+    stroke="#52525b" 
+    stroke-width="3"
+  />
+  <!-- Corsica -->
+  <ellipse cx="680" cy="580" rx="25" ry="40" fill="#27272a" stroke="#52525b" stroke-width="2"/>
+</svg>

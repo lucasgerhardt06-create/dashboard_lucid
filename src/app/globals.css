@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-quicksand);
+  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-baloo);
+  --color-background: #0E0911;
+  --color-foreground: #F3F0F9;
+  --color-card: #1D1822;
+  --color-border: #332D3D;
+  --color-primary: #B580F4;
+  --color-primary-foreground: #1A1224;
+}
+
+@layer base {
+  * { @apply border-border; }
+  html { background: #08040A; }
+  body { background: #0E0911; color: #F3F0F9; font-family: var(--font-quicksand), sans-serif; }
+  button, input, textarea, select { font: inherit; }
+  button, a, input, textarea, select { outline-offset: 3px; }
+  button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid #CDA1F9; }
+}
+
+.font-display { font-family: var(--font-baloo), sans-serif; }
+::selection { background: #B580F4; color: #1A1224; }
