@@ -43,6 +43,6 @@ next-env.d.ts
 
 release/
 
-# variables d'environnement du déploiement (jamais dans le dépôt)
+# variables du déploiement, jamais dans le dépôt
 .env
 .env.local

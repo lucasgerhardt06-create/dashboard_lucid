@@ -1,0 +1,10 @@
+import type { Friendship, Profile, PublicProfile } from "../views";
+import {isTestSchool} from "./geography";
+export interface NetworkNode { key:number; name:string; level:number|null; streak:number; school:string; degree:number }
+export interface NetworkData {nodes:NetworkNode[];links:{source:number;target:number}[]}
+export function anonymizeNetwork(profiles:Profile[],names:PublicProfile[],friends:Friendship[]):NetworkData{
+ const pupils=profiles.filter(p=>!isTestSchool(p.school_name));const ids=new Map(pupils.map((p,i)=>[p.id,i]));const publicNames=new Map(names.map(p=>[p.id,p.display_name]));const seen=new Set<string>();const links:NetworkData["links"]=[];
+ for(const f of friends){const a=ids.get(f.user_id),b=ids.get(f.friend_id);if(f.status!=="accepted"||a===undefined||b===undefined||a===b)continue;const pair=`${Math.min(a,b)}:${Math.max(a,b)}`;if(seen.has(pair))continue;seen.add(pair);links.push({source:a,target:b});}
+ return {nodes:pupils.map((p,key)=>({key,name:publicNames.get(p.id)||"Élève sans nom affiché",level:p.level,streak:p.streak,school:p.school_name||"Établissement non renseigné",degree:links.filter(l=>l.source===key||l.target===key).length})),links};
+}
+export function networkStats(data:NetworkData){const adj=new Map(data.nodes.map(n=>[n.key,[] as number[]]));for(const l of data.links){adj.get(l.source)?.push(l.target);adj.get(l.target)?.push(l.source);}const seen=new Set<number>(),components:number[][]=[];for(const n of data.nodes){if(seen.has(n.key))continue;const stack=[n.key],part:number[]=[];seen.add(n.key);while(stack.length){const key=stack.pop()!;part.push(key);for(const next of adj.get(key)??[])if(!seen.has(next)){seen.add(next);stack.push(next);}}components.push(part);}components.sort((a,b)=>b.length-a.length);const groups=components.filter(c=>c.length>1);const isolated=components.filter(c=>c.length===1).length;return {total:data.nodes.length,connected:data.nodes.length-isolated,isolated,average:data.nodes.length?data.links.length*2/data.nodes.length:0,groups:groups.length,largest:groups[0]?.length??0,largestKeys:groups[0]??[]};}

@@ -23,3 +23,11 @@
 
 .font-display { font-family: var(--font-baloo), sans-serif; }
 ::selection { background: #B580F4; color: #1A1224; }
+
+.empty-chart { min-height: 160px; display: grid; place-items: center; padding: 24px; border-radius: 16px; background: #09060C; color: #A8A0B4; font-size: 14px; }
+.control { border: 1px solid #332D3D; border-radius: 12px; padding: 8px 12px; background: #27212C; color: #F3F0F9; font-size: 12px; }
+.control:hover { background: #332D3D; }
+svg [tabindex]:focus-visible { outline: 2px solid #CDA1F9; outline-offset: 3px; }
+.recharts-wrapper:focus-visible { outline: 2px solid #CDA1F9; }
+fieldset:disabled { opacity: .55; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }

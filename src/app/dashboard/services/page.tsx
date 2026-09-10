@@ -1,3 +1,5 @@
-import { DenseTable, PageHeader, ViewPanel } from "@/components/dashboard/analytics-ui"; import { readView } from "@/lib/views";
-export const dynamic="force-dynamic"; export const revalidate=0;
-export default async function ServicesPage(){const [services,activation]=await Promise.all([readView("v_services"),readView("v_activation")]);return <><PageHeader title="Services scolaires" description="Suivre la disponibilité des connecteurs et le délai avant les premières données de l’élève."/><div className="grid gap-5 xl:grid-cols-2"><ViewPanel title="Santé des services" view="v_services" error={services.error} empty={!services.data.length}><DenseTable label="Services scolaires" rows={services.data} columns={[{key:"service",label:"Service",emphasis:true},{key:"actifs_7j",label:"Actifs 7 j"},{key:"syncs_ok_7j",label:"Syncs OK"},{key:"syncs_ko_7j",label:"Syncs KO"},{key:"echec_pct_7j",label:"Échec %"},{key:"motif_principal",label:"Motif"}]}/></ViewPanel><ViewPanel title="Premières données, groupées par service" view="v_activation" error={activation.error} empty={!activation.data.length}><DenseTable label="Activation par service" rows={activation.data} columns={[{key:"service",label:"Service",emphasis:true},{key:"comptes",label:"Comptes"},{key:"ont_vu_leurs_donnees",label:"Données vues"},{key:"donnees_pct",label:"Données %"},{key:"mediane_s_avant_donnees",label:"Médiane, s"}]}/></ViewPanel></div></>}
+import { AnalyticsPage } from "@/components/dashboard/analytics-page";
+import type { SearchProps } from "@/components/dashboard/story";
+export const dynamic="force-dynamic";
+export const revalidate=0;
+export default function Page(props:SearchProps){return <AnalyticsPage page="services" {...props}/>;}

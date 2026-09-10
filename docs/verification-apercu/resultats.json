@@ -1,0 +1,91 @@
+{
+  "pages": [
+    {
+      "page": "/dashboard",
+      "svg": 11,
+      "bytes": 67405,
+      "status": "Rendu serveur validé"
+    },
+    {
+      "page": "/dashboard/retention",
+      "svg": 7,
+      "bytes": 47640,
+      "status": "Rendu serveur validé"
+    },
+    {
+      "page": "/dashboard/entonnoir",
+      "svg": 9,
+      "bytes": 52345,
+      "status": "Rendu serveur validé"
+    },
+    {
+      "page": "/dashboard/services",
+      "svg": 4,
+      "bytes": 27039,
+      "status": "Rendu serveur validé"
+    },
+    {
+      "page": "/dashboard/ia",
+      "svg": 24,
+      "bytes": 120938,
+      "status": "Rendu serveur validé"
+    },
+    {
+      "page": "/dashboard/banque",
+      "svg": 2,
+      "bytes": 18034,
+      "status": "Rendu serveur validé"
+    },
+    {
+      "page": "/dashboard/rituel",
+      "svg": 9,
+      "bytes": 46244,
+      "status": "Rendu serveur validé"
+    },
+    {
+      "page": "/dashboard/amis",
+      "svg": 2,
+      "bytes": 11493,
+      "status": "Rendu serveur validé"
+    },
+    {
+      "page": "/dashboard/eleves",
+      "svg": 1,
+      "bytes": 164443,
+      "status": "Rendu serveur validé"
+    },
+    {
+      "page": "/dashboard/courrier",
+      "svg": 0,
+      "bytes": 6682,
+      "status": "Rendu serveur validé"
+    },
+    {
+      "page": "/dashboard/support",
+      "svg": 0,
+      "bytes": 3033,
+      "status": "Rendu serveur validé"
+    },
+    {
+      "page": "/dashboard/erreurs",
+      "svg": 5,
+      "bytes": 29581,
+      "status": "Rendu serveur validé"
+    },
+    {
+      "page": "/dashboard/configuration",
+      "svg": 0,
+      "bytes": 6056,
+      "status": "Rendu serveur validé"
+    },
+    {
+      "page": "/dashboard/eleves/[id]",
+      "svg": 2,
+      "bytes": 19417,
+      "status": "Rendu serveur validé"
+    }
+  ],
+  "realReads": 0,
+  "authentication": "Aperçu refusé sans session, accepté avec un cookie HMAC de test",
+  "limits": "Rendu serveur uniquement. La simulation d3-force et les interactions client ne sont pas exécutées."
+}
