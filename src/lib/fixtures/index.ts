@@ -20,6 +20,8 @@ export const fixtures: {[K in keyof ViewMap]:()=>ViewMap[K][]} = {
   profiles_public:()=>profiles().map(({id,level,xp,streak,last_seen,platform},i)=>({id,level,xp,streak,last_seen,platform,display_name:`${["Lune","Nova","Étoile","Comète","Orion"][i%5]} ${i+1}`})),
   friendships:()=>[...Array.from({length:17},(_,i)=>[i,i+1]),[0,5],[3,10],...Array.from({length:11},(_,i)=>[18+i,19+i]),[18,23]].map(([a,b])=>({user_id:`fixture-${a}`,friend_id:`fixture-${b}`,status:"accepted",created_at:last})),
   v_pouls:()=>[{actifs_aujourdhui:14,actifs_7j:32,actifs_30j:40,nouveaux_aujourdhui:1,nouveaux_7j:7,north_star_3j:9,north_star_pct:28.125,dau_mau_pct:35,sessions_7j:168,ecrans_par_jour_actif:8.5,activation_ia_pct:62.5,echecs_24h:1,erreurs_24h:0,installs_7j:14,demos_7j:0,onboarding_pct_7j:50}],
+  v_repartitions:()=>[["plateforme","iOS",34],["plateforme","Android",6],["appareil","Mobile",38],["appareil","Tablet",2],["niveau","tle",16],["niveau","1re",14],["niveau","2de",8],["niveau","inconnu",2],["service","pronote",30],["service","ecoledirecte",8],["service","skolengo",2],["serie","0 jour",18],["serie","1 à 2 jours",12],["serie","3 à 6 jours",7],["serie","7 à 13 jours",3],["progression","niveau 1",22],["progression","niveaux 2 à 3",13],["progression","niveaux 4 à 6",5],["avatar","personnalisé",31],["avatar","par défaut",9]].map(([famille,valeur,eleves])=>({famille:String(famille),valeur:String(valeur),eleves:Number(eleves)})),
+  v_actifs_quotidiens:()=>days.map((jour,i)=>({jour,actifs:8+Math.round(6*Math.sin(i/4))+(i>22?i-22:0),nouveaux:1+(i%5===0?3:0),actifs_ia:4+(i%3),actifs_7j:24+i%4,actifs_30j:38+i%3})),
   v_retention:()=>["2026-08-10","2026-08-17","2026-08-24","2026-08-31","2026-09-07"].map((cohorte,i)=>({cohorte,eleves:8,j1_pct:75-i*12.5,j7_pct:i<4?50-i*12.5:null,j30_pct:null})),
   v_versions:()=>[{app_version:"1.3.0",platform:"ios",evenements:1240,eleves:26,depuis:days[0]},{app_version:"1.3.0",platform:"android",evenements:810,eleves:14,depuis:days[0]}],
   v_demarrage:()=>["iPhone 13","Pixel 7"].map((appareil,i)=>({appareil,platform:i?"android":"ios",app_version:"1.3.0",lancements:40+i*5,p50_ms:680+i*200,p95_ms:1400+i*800})),
@@ -61,5 +63,5 @@ export const fixtures: {[K in keyof ViewMap]:()=>ViewMap[K][]} = {
   lucid_posts:()=>[{id:"post-fiction",kind:"news",status:"draft",title:"Bienvenue dans LUCID",author_name:"L’équipe LUCID",pinned:false,publish_at:null,expires_at:null,push_sent_at:null,created_at:last}],
   lucid_staff:()=>[{profile_id:"staff-fiction",label:"Équipe fictive",added_at:last}],
   app_config:()=>[{key:"maintenance_mode",value:"false"},{key:"ai_flags",value:'{"kill_switch":false,"bank":true}'}],
-  app_banners:()=>[{id:"banner-fiction",title:"Bienvenue",body:"Une nouvelle année commence",active:true}],
+  app_banners:()=>[{id:"banner-fiction",message:"Bienvenue : une nouvelle année commence",active:true,style_type:"info",link_url:null,link_text:null,created_at:last}],
 };
