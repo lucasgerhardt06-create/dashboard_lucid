@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Sparkline } from "./charts";
 import { number, type Insight, type funnel } from "@/lib/insights";
-export type SearchProps={searchParams:Promise<{apercu?:string;q?:string}>};
+export type SearchProps={searchParams:Promise<{apercu?:string;q?:string;etab?:string}>};
 export const referenceDate=(preview:boolean)=>preview?"2026-09-10":new Date().toISOString().slice(0,10);
 export function Source({name,window}:{name:string;window:string}){return <p className="mt-4 border-t border-[#332D3D] pt-3 text-[11px] text-[#A8A0B4]">Source : <span className="font-mono">{name}</span> · {window}</p>;}
 export function PreviewBanner({preview}:{preview:boolean}){return preview?<aside className="mb-6 rounded-2xl border-2 border-[#FFB08F] bg-[#3A2820] px-5 py-4" role="status"><p className="text-sm font-bold text-[#FFB08F]">Aperçu avec des données fictives, rien ici n’est réel</p><p className="mt-1 text-xs text-[#CDC8D6]">Scénario figé au 10 septembre 2026. Les formulaires d’écriture sont désactivés.</p></aside>:null;}

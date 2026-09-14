@@ -4,6 +4,7 @@
  */
 declare module "d3-geo" {
   export interface GeoProjection {
+    (point:[number,number]):[number,number]|null;
     parallels(value:[number,number]):GeoProjection;
     rotate(value:[number,number]):GeoProjection;
     center(value:[number,number]):GeoProjection;

@@ -21,6 +21,8 @@ function load(relative) {
 const {fixtures, FIXTURE_DATE} = load('../src/lib/fixtures/index.ts');
 const insights = load('../src/lib/insights/index.ts');
 const {geography,locateSchool,isTestSchool} = load('../src/lib/insights/geography.ts');
+const {construireAnnuaire,rattacher,motsPorteurs} = load('../src/lib/insights/annuaire.ts');
+const annuaire = construireAnnuaire(JSON.parse(fs.readFileSync(path.join(__dirname,'../data/annuaire-lycees-colleges.json'),'utf8')));
 const {anonymizeNetwork,networkStats} = load('../src/lib/insights/network.ts');
 
 test('Le scénario est déterministe et les populations se recoupent',()=>{
@@ -67,11 +69,11 @@ test('La géographie normalise les accents et garde les noms ambigus non localis
  assert.equal(locateSchool('Lycée de Poitiers'),'Nouvelle-Aquitaine');
  assert.equal(locateSchool('Lycée Nice Paris'),null);
  assert.equal(locateSchool('Lycée inconnu'),null);
- assert.equal(locateSchool('Lycée Jules Verne'),"Provence-Alpes-Côte d'Azur");
+ assert.equal(locateSchool('Lycée Jules Verne'),null);
  assert.equal(locateSchool('Lycée de Mamoudzou'),'Mayotte');
  assert.equal(isTestSchool('DÉMO Nice'),true);
  const rows=fixtures.profiles(),g=geography([...rows,{...rows[0],school_name:'Science Factor'}]);
- assert.equal(g.total,40);assert.equal(g.excluded,1);assert.equal(g.unlocated.length,5);
+ assert.equal(g.total,40);assert.equal(g.excluded,1);assert.equal(g.unlocated.length,10);
  assert.equal(g.schools.reduce((s,r)=>s+r.count,0),g.total);
 });
 test('Le graphe anonymise les identifiants, déduplique et écarte les liens non acceptés',()=>{
@@ -96,4 +98,19 @@ test('Chaque page analytics produit de deux à cinq constats, même vide',()=>{
   assert.ok(result.length>=2&&result.length<=5);
   assert.ok(result.every(i=>i.source&&i.window&&!/NaN|undefined|Infinity/.test(i.text)));
  }
+});
+test('L’annuaire rattache les noms tels que les ENT les donnent, et laisse les homonymes',()=>{
+ assert.deepEqual(motsPorteurs('LYCEE GENERAL ET TECHNOLOGIQUE DU GRANIER'),['GRANIER']);
+ assert.deepEqual(motsPorteurs('LYC POLYVAL PRIVE DES METIERS ST JOSEPH - LA SALLE'),['SAINT','JOSEPH','SALLE']);
+ assert.equal(rattacher('LYCEE GENERAL ET TECHNOLOGIQUE DHUODA',annuaire).commune,'Nîmes');
+ assert.equal(rattacher('LPO LOUIS LACHENAL ',annuaire).uai.length,8);
+ assert.equal(rattacher('PASTRE-GRANDE BASTIDE',annuaire).commune,'Marseille');
+ assert.equal(rattacher('STANISLAS CANNES',annuaire).commune,'Cannes');
+ assert.equal(rattacher('Campus Bougainville',annuaire).confiance,'exact');
+ assert.equal(rattacher('LYCEE MARIE CURIE ',annuaire),null);
+ assert.equal(rattacher('Lycée Jules Verne',annuaire),null);
+ assert.equal(rattacher('CentraleSupélec',annuaire),null);
+ const dhuoda=rattacher('LYCEE GENERAL ET TECHNOLOGIQUE DHUODA',annuaire).uai;assert.equal(rattacher(null,annuaire,dhuoda).uai,dhuoda);
+ const g=geography([{id:'a',level:1,xp:0,streak:0,school_name:'LYCEE GENERAL ET TECHNOLOGIQUE DHUODA',class_name:null,last_seen:null,platform:null},{id:'b',level:1,xp:0,streak:0,school_name:'LYCEE MARIE CURIE',class_name:null,last_seen:null,platform:null},{id:'c',level:1,xp:0,streak:0,school_name:'LYCEE MARIE CURIE',class_name:null,last_seen:null,platform:null}],annuaire,{'lycee marie curie':dhuoda});
+ assert.equal(g.unlocated.length,0);assert.equal(g.precise,3);assert.equal(g.schools.find(s=>s.school==='LYCEE MARIE CURIE').uai,dhuoda);
 });

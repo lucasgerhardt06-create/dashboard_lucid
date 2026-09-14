@@ -46,7 +46,7 @@ export interface EvenementsInconnus { event_name:string; n:number; app_version:s
 export interface SanteInstrumentation { famille:string; evenement:string; n_14j:number; dernier:string; etat:"jamais vu"|"anecdotique"|"vivant"; description:string }
 export interface FeedbackSupport { created_at:string; ref:string; type:string; content:string; app_version:string; build:string; ota:string; platform:string; os_version:string; model:string; ent_service:string; was_online:boolean; pending_writes:number; user_id:string }
 
-export interface Profile { id:string; level:number|null; xp:number; streak:number; school_name:string|null; class_name:string|null; last_seen:string|null; platform:string|null }
+export interface Profile { id:string; level:number|null; xp:number; streak:number; school_name:string|null; school_uai?:string|null; class_name:string|null; last_seen:string|null; platform:string|null }
 export interface PublicProfile { id:string; display_name:string|null; level:number|null; xp:number; streak:number; last_seen:string|null }
 export interface Friendship { user_id:string; friend_id:string; status:string; created_at:string }
 export interface Post { id:string; kind:string; status:string; title:string; author_name:string; pinned:boolean; publish_at:string|null; expires_at:string|null; push_sent_at:string|null; created_at:string }
@@ -71,7 +71,7 @@ export type ViewResult<T> = { data:T[]; error:boolean };
 const tableColumns:Partial<Record<ViewName,string>> = {
   profile_detail:"id,full_name,level,xp,streak,school_name,class_name,last_seen,platform,usage_limits",
   daily_xp:"profile_id,date,amount", gamification_efforts:"profile_id,day_key,kind,xp", user_badges:"profile_id,badge_id",
-  profiles:"id,level,xp,streak,school_name,class_name,last_seen,platform",
+  profiles:"id,level,xp,streak,school_name,school_uai,class_name,last_seen,platform",
   profiles_public:"id,display_name,level,xp,streak,last_seen",
   friendships:"user_id,friend_id,status,created_at",
   lucid_posts:"id,kind,status,title,author_name,pinned,publish_at,expires_at,push_sent_at,created_at",

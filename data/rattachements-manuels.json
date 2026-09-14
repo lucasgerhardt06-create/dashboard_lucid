@@ -1,0 +1,4 @@
+{
+  "_mode_d_emploi": "Quand l'annuaire ne tranche pas (« LYCEE MARIE CURIE » existe dans dix villes), poser ici le nom tel qu'il arrive de l'ENT → code UAI de l'établissement (8 caractères, annuaire.education.gouv.fr). La casse, les accents et les espaces finales sont ignorés. Exemple : \"LYCEE MARIE CURIE\": \"0060025V\".",
+  "rattachements": {}
+}
