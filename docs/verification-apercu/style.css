@@ -673,6 +673,9 @@
   .grow {
     flex-grow: 1;
   }
+  .basis-full {
+    flex-basis: 100%;
+  }
   .caption-bottom {
     caption-side: bottom;
   }

@@ -3,11 +3,13 @@
 
 export type CourrierKind = "news" | "poll" | "question";
 export type CourrierStatus = "draft" | "published" | "archived";
-export type AudienceMode = "tous" | "classe" | "etablissement" | "profil";
+export type AudienceMode = "tous" | "niveau" | "etablissement" | "classe" | "profil";
+/** Niveau scolaire déduit de la classe en base (`lucid_grade_of`). */
+export type Grade = "terminale" | "premiere" | "seconde" | "college" | "autre";
 
 export interface CourrierOption { id:string; label:string }
 /** Le filtre d'audience tel que la base le lit (`lucid_matches_audience`). `{}` = tout le monde. */
-export interface Audience { class_name?:string[]; school_name?:string[]; profile_ids?:string[]; platform?:string[]; min_level?:number; min_streak?:number }
+export interface Audience { grade?:Grade[]; class_name?:string[]; school_name?:string[]; profile_ids?:string[]; platform?:string[]; min_level?:number; min_streak?:number }
 
 /** Une ligne de `lucid_admin_posts()`. */
 export interface AdminPost {
@@ -30,6 +32,9 @@ export interface PickableProfile { id:string; full_name:string|null; class_name:
 
 export const KIND_LABELS:Record<CourrierKind,string> = { news:"Actualité", poll:"Sondage", question:"Question" };
 export const STATUS_LABELS:Record<CourrierStatus,string> = { draft:"Brouillon", published:"Publié", archived:"Archivé" };
+export const GRADE_LABELS:Record<Grade,string> = { terminale:"Terminale", premiere:"Première", seconde:"Seconde", college:"Collège", autre:"Autres et classe inconnue" };
+export const AUDIENCE_MODE_LABELS:Record<AudienceMode,string> = { tous:"Tous les élèves", niveau:"Un niveau", etablissement:"Un lycée", classe:"Une classe", profil:"Un seul élève, pour tester" };
+const isGrade = (value:string):value is Grade => value in GRADE_LABELS;
 
 export const TITLE_MAX = 120;
 export const BODY_MAX = 4000;
@@ -53,9 +58,10 @@ export function parsePollOptions(text:string):CourrierOption[] {
   return options;
 }
 
-/** Le filtre d'audience depuis les champs du formulaire. */
+/** Le filtre d'audience depuis les champs du formulaire (`value` : une classe, un lycée, un profil, ou des niveaux séparés par des virgules). */
 export function audienceFromForm(mode:string, value:string):Audience {
   const v = clean(value);
+  if (mode==="niveau") { const grades = [...new Set(v.split(",").map(g=>g.trim().toLowerCase()).filter(isGrade))]; return grades.length ? { grade:grades } : {}; }
   if (mode==="classe" && v) return { class_name:[v] };
   if (mode==="etablissement" && v) return { school_name:[v] };
   if (mode==="profil" && v) return { profile_ids:[v.split(/\s+/)[0]] };
@@ -66,6 +72,7 @@ export function audienceFromForm(mode:string, value:string):Audience {
 export function describeAudience(audience:Audience|null|undefined):string {
   if (!audience || Object.keys(audience).length===0) return "Tous les élèves";
   const parts:string[] = [];
+  if (audience.grade?.length) parts.push(audience.grade.map(g=>GRADE_LABELS[g] ?? g).join(", "));
   if (audience.class_name?.length) parts.push(`classe ${audience.class_name.join(", ")}`);
   if (audience.school_name?.length) parts.push(audience.school_name.join(", "));
   if (audience.profile_ids?.length) parts.push(audience.profile_ids.length===1?`le profil ${audience.profile_ids[0]}`:`${audience.profile_ids.length} profils`);
@@ -102,7 +109,7 @@ export function readCompose(form:FormData):{ ok:true; input:ComposeInput }|{ ok:
   if (kind==="poll" && (options.length<2 || options.length>8)) return { ok:false, error:"Un sondage a besoin de 2 à 8 réponses possibles, une par ligne." };
   const audience = audienceFromForm(String(form.get("audience_mode")??"tous"), String(form.get("audience_value")??""));
   const mode = String(form.get("audience_mode")??"tous");
-  if (mode!=="tous" && Object.keys(audience).length===0) return { ok:false, error:mode==="classe"?"Quelle classe ? Le champ est vide.":mode==="etablissement"?"Quel établissement ? Le champ est vide.":"Quel profil ? Le champ est vide." };
+  if (mode!=="tous" && Object.keys(audience).length===0) return { ok:false, error:mode==="niveau"?"Quel niveau ? Choisis-en au moins un.":mode==="classe"?"Quelle classe ? Le champ est vide.":mode==="etablissement"?"Quel lycée ? Le champ est vide.":"Quel profil ? Le champ est vide." };
   const ctaLabel = clean(form.get("cta_label")) || null;
   const ctaUrl = clean(form.get("cta_url")) || null;
   if ((ctaLabel && !ctaUrl) || (!ctaLabel && ctaUrl)) return { ok:false, error:"Le bouton a besoin d'un libellé et d'une destination." };

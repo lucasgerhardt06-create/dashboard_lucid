@@ -23,6 +23,10 @@ test('L’audience du formulaire donne le filtre que la base attend', () => {
   assert.deepEqual(m.audienceFromForm('etablissement','Lycée Jules Verne'), {school_name:['Lycée Jules Verne']});
   assert.deepEqual(m.audienceFromForm('profil','clement.bellet-odent Clément'), {profile_ids:['clement.bellet-odent']});
   assert.deepEqual(m.audienceFromForm('classe',''), {});
+  assert.deepEqual(m.audienceFromForm('niveau','terminale,premiere, Terminale ,inconnu'), {grade:['terminale','premiere']});
+  assert.deepEqual(m.audienceFromForm('niveau',''), {});
+  assert.equal(m.readCompose(form({title:'T', audience_mode:'niveau', audience_value:''})).error, 'Quel niveau ? Choisis-en au moins un.');
+  assert.equal(m.describeAudience({grade:['seconde','college']}), 'Seconde, Collège');
   assert.equal(m.describeAudience({}), 'Tous les élèves');
   assert.equal(m.describeAudience({class_name:['TG3'],min_streak:3}), 'classe TG3 · série de 3 jours et plus');
 });

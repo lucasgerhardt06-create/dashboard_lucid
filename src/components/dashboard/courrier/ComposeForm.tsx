@@ -2,7 +2,7 @@
 // « Nouveau message » : un titre, un message, à qui, et un bouton. Le reste se déplie.
 import { useActionState, useRef, useState } from "react";
 import { composeCourrier, previewAudience, type ActionResult } from "@/app/actions/courrier";
-import { excerpt, KIND_LABELS, type AudienceCount, type AudienceMode, type CourrierKind, type PickableProfile } from "@/lib/courrier/model";
+import { AUDIENCE_MODE_LABELS, excerpt, GRADE_LABELS, KIND_LABELS, type AudienceCount, type AudienceMode, type CourrierKind, type Grade, type PickableProfile } from "@/lib/courrier/model";
 
 const field = "w-full rounded-2xl border border-[#332D3D] bg-[#09060C] p-3 outline-none focus:border-[#CDA1F9] placeholder:text-[#6E6680]";
 const pill = (on:boolean) => `cursor-pointer rounded-full border px-3 py-1.5 text-sm transition-colors ${on?"border-[#B580F4] bg-[#B580F4] font-bold text-[#1A1224]":"border-[#332D3D] bg-[#09060C] text-[#CDC8D6] hover:border-[#6E6680]"}`;
@@ -25,6 +25,7 @@ function Fields({ preview, profiles, reach, action, pending }:{ preview:boolean;
   const [kind, setKind] = useState<CourrierKind>("news");
   const [mode, setMode] = useState<AudienceMode>("tous");
   const [value, setValue] = useState("");
+  const [grades, setGrades] = useState<Grade[]>([]);
   const [count, setCount] = useState<AudienceCount|null|"pending">(reach);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -44,10 +45,13 @@ function Fields({ preview, profiles, reach, action, pending }:{ preview:boolean;
     setCount("pending");
     timer.current = setTimeout(()=>{ void previewAudience(nextMode, nextValue).then(setCount); }, 350);
   }
-  const pickMode = (next:AudienceMode) => { setMode(next); setValue(""); schedule(next, ""); };
+  const pickMode = (next:AudienceMode) => { setMode(next); setValue(""); setGrades([]); schedule(next, ""); };
   const pickValue = (next:string) => { setValue(next); schedule(mode, next); };
+  const toggleGrade = (grade:Grade) => { const next = grades.includes(grade) ? grades.filter(g=>g!==grade) : [...grades, grade]; setGrades(next); schedule("niveau", next.join(",")); };
+  // Les niveaux voyagent dans le même champ que la classe ou le lycée, séparés par des virgules.
+  const audienceValue = mode==="niveau" ? grades.join(",") : value;
 
-  const countLine = count==="pending" ? "Comptage…" : count===null ? (mode==="tous" ? "Effectif indisponible pour l'instant." : mode==="classe" ? "Indique une classe pour compter." : mode==="etablissement" ? "Indique un établissement pour compter." : "Choisis un profil pour compter.")
+  const countLine = count==="pending" ? "Comptage…" : count===null ? (mode==="tous" ? "Effectif indisponible pour l'instant." : mode==="niveau" ? "Choisis un ou plusieurs niveaux pour compter." : mode==="classe" ? "Indique une classe pour compter." : mode==="etablissement" ? "Indique un lycée pour compter." : "Choisis un profil pour compter.")
     : count.eleves===0 ? "Personne ne correspond." : `${count.eleves} élève${count.eleves>1?"s verront":" verra"} le message · ${count.joignables} ${count.joignables>1?"recevront":"recevra"} la notification`;
 
   return <fieldset disabled={preview||pending} className="contents">
@@ -72,10 +76,15 @@ function Fields({ preview, profiles, reach, action, pending }:{ preview:boolean;
       <section className="grid gap-3 rounded-2xl border border-[#332D3D] bg-[#09060C] p-4">
         <h3 className="text-sm font-bold uppercase tracking-[0.12em] text-[#CDA1F9]">À qui ?</h3>
         <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Audience">
-          {([["tous","Tous les élèves"],["classe","Une classe"],["etablissement","Un établissement"],["profil","Un seul élève, pour tester"]] as [AudienceMode,string][]).map(([m,label])=><button type="button" key={m} role="radio" aria-checked={mode===m} className={pill(mode===m)} onClick={()=>pickMode(m)}>{label}</button>)}
+          {(Object.keys(AUDIENCE_MODE_LABELS) as AudienceMode[]).map(m=><button type="button" key={m} role="radio" aria-checked={mode===m} className={pill(mode===m)} onClick={()=>pickMode(m)}>{AUDIENCE_MODE_LABELS[m]}</button>)}
         </div>
-        {mode!=="tous" && <>
-          <input name="audience_value" list={`audience-${mode}`} value={value} onChange={e=>pickValue(e.target.value)} autoComplete="off" placeholder={mode==="classe"?"Le nom exact de la classe, tel que l'ENT l'écrit (1ere B, TG3…)":mode==="etablissement"?"Le nom exact de l'établissement":"Tape un nom ou un identifiant de profil"} className={`${field} bg-[#1D1822]`} aria-label="Valeur de l'audience"/>
+        <input type="hidden" name="audience_value" value={audienceValue}/>
+        {mode==="niveau" && <div className="flex flex-wrap gap-2" role="group" aria-label="Niveaux">
+          {(Object.keys(GRADE_LABELS) as Grade[]).map(g=><button type="button" key={g} aria-pressed={grades.includes(g)} className={pill(grades.includes(g))} onClick={()=>toggleGrade(g)}>{GRADE_LABELS[g]}</button>)}
+          <p className="basis-full text-xs text-[#6E6680]">Le niveau se lit dans le nom de la classe donné par l’ENT (TG3, 1ERE B, 2NDE 4, 3e…). Plusieurs niveaux possibles.</p>
+        </div>}
+        {(mode==="classe"||mode==="etablissement"||mode==="profil") && <>
+          <input list={`audience-${mode}`} value={value} onChange={e=>pickValue(e.target.value)} autoComplete="off" placeholder={mode==="classe"?"Le nom exact de la classe, tel que l'ENT l'écrit (1ere B, TG3…)":mode==="etablissement"?"Le nom exact du lycée, tel que l'ENT l'écrit":"Tape un nom ou un identifiant de profil"} className={`${field} bg-[#1D1822]`} aria-label="Valeur de l'audience"/>
           <datalist id="audience-classe">{classes.map(c=><option key={c} value={c}/>)}</datalist>
           <datalist id="audience-etablissement">{schools.map(s=><option key={s} value={s}/>)}</datalist>
           <datalist id="audience-profil">{profiles.map(p=><option key={p.id} value={p.id}>{[p.full_name,p.class_name].filter(Boolean).join(" · ")}</option>)}</datalist>
