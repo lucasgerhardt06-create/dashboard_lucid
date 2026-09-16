@@ -80,3 +80,32 @@ test('La phrase de résultat dit qui a reçu quoi', () => {
   assert.equal(m.describeSend({eleves:28,joignables:19}, {targets:19,sent:17,failed:2,disabled:2,errors:['DeviceNotRegistered ×2']}, true), 'Publié dans la messagerie de 28 élèves. Notification acceptée pour 17 appareils sur 19. 2 en échec (DeviceNotRegistered ×2). 2 appareils désinstallés retirés de la liste.');
   for (const s of [m.describeSend(null,null,false), m.describeSend({eleves:2,joignables:2},{targets:2,sent:2,failed:0,disabled:0,errors:[]},true)]) assert.ok(!/[–—]/.test(s), s);
 });
+
+test('La version de l’app se lit comme un filtre d’appareil, en plus de l’audience', () => {
+  assert.equal(m.cleanVersion(' v2.1.0 '), '2.1.0');
+  assert.equal(m.cleanVersion('2.1'), '2.1');
+  assert.equal(m.cleanVersion('deux'), null);
+  assert.equal(m.cleanVersion(''), null);
+  assert.deepEqual(m.audienceFromForm('tous', '', '2.1.0'), {app_version_lt:'2.1.0'});
+  assert.deepEqual(m.audienceFromForm('classe', 'TG3', '2.1.0'), {class_name:['TG3'], app_version_lt:'2.1.0'});
+  assert.deepEqual(m.audienceFromForm('tous', '', 'n’importe quoi'), {});
+  assert.equal(m.hasProfileFilter({app_version_lt:'2.1.0'}), false);
+  assert.equal(m.hasProfileFilter({grade:['seconde'], app_version_lt:'2.1.0'}), true);
+  assert.equal(m.describeAudience({app_version_lt:'2.1.0'}), 'notification aux appareils avant la 2.1.0');
+  assert.equal(m.readCompose(form({title:'T', audience_mode:'tous', app_version_lt:'bientôt'})).error, 'La version doit s\'écrire comme 2.1.0.');
+  const parsed = m.readCompose(form({title:'T', audience_mode:'tous', app_version_lt:'2.1.0', intent:'send'}));
+  assert.equal(parsed.ok, true);
+  assert.deepEqual(parsed.input.audience, {app_version_lt:'2.1.0'});
+});
+
+test('Un envoi qui a échoué chez Expo dit pourquoi, et la livraison se résume en une phrase', () => {
+  const sent = m.describeSend({eleves:176, joignables:70}, {targets:70, sent:0, failed:70, disabled:0, errors:['InvalidCredentials ×70']}, true);
+  assert.ok(sent.includes('0 appareil sur 70'), sent);
+  assert.ok(sent.includes('eas credentials'), sent);
+  assert.ok(!/[–—]/.test(sent));
+  assert.equal(m.describeDelivery({targets:0, accepted:0, refused:0, delivered:0, failed:0, pending:0, errors:[], checkedAt:null}), 'Aucun appareil visé par cet envoi.');
+  const d = m.describeDelivery({targets:70, accepted:68, refused:2, delivered:60, failed:3, pending:5, errors:['DeviceNotRegistered ×3', 'unknown ×2'], checkedAt:'2026-09-16T10:00:00Z'});
+  assert.ok(d.startsWith('70 appareils visés : 2 refusés par Expo dès l\'envoi, 60 remises à Apple ou Google, 3 en erreur au reçu, 5 sans reçu encore.'), d);
+  assert.ok(d.includes('désinstallé'), d);
+  assert.ok(!/[–—]/.test(d));
+});

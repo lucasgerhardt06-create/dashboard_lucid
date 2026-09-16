@@ -628,6 +628,9 @@
   .max-w-\[85\%\] {
     max-width: 85%;
   }
+  .max-w-\[180px\] {
+    max-width: 180px;
+  }
   .max-w-\[1600px\] {
     max-width: 1600px;
   }

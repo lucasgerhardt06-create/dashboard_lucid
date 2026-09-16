@@ -8,8 +8,8 @@ import { revalidatePath } from "next/cache";
 import { requireDashboardSession } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { countAudience } from "@/lib/courrier/data";
-import { audienceFromForm, describeSend, readCompose, type AudienceCount, type PushReport } from "@/lib/courrier/model";
-import { sendPostPush, type PushOutcome } from "@/lib/courrier/push";
+import { audienceFromForm, describeDelivery, describeSend, readCompose, type AudienceCount, type PushReport } from "@/lib/courrier/model";
+import { checkPostReceipts, sendPostPush, type PushOutcome } from "@/lib/courrier/push";
 
 export interface ActionResult { ok:boolean; message:string; postId?:string; stamp:number }
 
@@ -107,6 +107,19 @@ export async function notifyCourrier(_previous:ActionResult|null, form:FormData)
   return result(true, `Notification acceptée pour ${r.sent} appareil${r.sent>1?"s":""} sur ${r.targets}${r.failed?`, ${r.failed} en échec (${r.errors.join(", ")})`:""}${r.disabled?`, ${r.disabled} désinstallé${r.disabled>1?"s":""} retiré${r.disabled>1?"s":""}`:""}.`, postId);
 }
 
+/** Relit les reçus Expo d'un envoi : ce qu'Apple et Google ont vraiment accepté. */
+export async function checkReceiptsCourrier(_previous:ActionResult|null, form:FormData):Promise<ActionResult> {
+  await requireDashboardSession();
+  const preview = guardPreview(form); if (preview) return preview;
+  const postId = String(form.get("post_id") ?? "");
+  if (!UUID.test(postId)) return result(false, "Envoi introuvable.");
+  const outcome = await checkPostReceipts(postId);
+  refresh(postId);
+  if (!outcome.ok) return result(false, `Les reçus n'ont pas pu être lus : ${outcome.reason}.`);
+  const lead = outcome.checked>0 ? `${outcome.checked} reçu${outcome.checked>1?"s":""} relu${outcome.checked>1?"s":""}. ` : outcome.summary.pending>0 ? "Expo n'a pas encore de reçu pour ces appareils : réessaie dans un quart d'heure. " : "";
+  return result(true, lead+describeDelivery(outcome.summary), postId);
+}
+
 /** Retire un envoi de la messagerie des élèves (les réponses restent lisibles ici). */
 export async function archiveCourrier(_previous:ActionResult|null, form:FormData):Promise<ActionResult> {
   await requireDashboardSession();
@@ -135,9 +148,9 @@ export async function replyCourrier(_previous:ActionResult|null, form:FormData):
   return result(true, "Réponse envoyée : l'élève la verra dans son fil, comme un nouveau message.", postId);
 }
 
-/** Pendant la saisie : combien d'élèves ce filtre touche, combien ont un appareil. */
-export async function previewAudience(mode:string, value:string):Promise<AudienceCount|null> {
+/** Pendant la saisie : combien d'élèves ce filtre touche, combien d'appareils recevraient la notification. */
+export async function previewAudience(mode:string, value:string, versionLt=""):Promise<AudienceCount|null> {
   await requireDashboardSession();
-  try { return await countAudience(audienceFromForm(mode, value)); }
+  try { return await countAudience(audienceFromForm(mode, value, versionLt)); }
   catch (e) { console.error("Courrier : comptage d'audience impossible", reason(e)); return null; }
 }

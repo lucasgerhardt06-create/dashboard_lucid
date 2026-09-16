@@ -4,7 +4,8 @@ import { BarList, Metric, PageHeader, ViewPanel } from "@/components/dashboard/a
 import { PostActions, ReplyForm } from "@/components/dashboard/courrier/PostActions";
 import { PreviewBanner, Findings, type SearchProps } from "@/components/dashboard/story";
 import { readCourrierResults } from "@/lib/courrier/data";
-import { describeAudience, KIND_LABELS, STATUS_LABELS, type AdminReply } from "@/lib/courrier/model";
+import { describeAudience, describeDelivery, KIND_LABELS, STATUS_LABELS, type AdminReply } from "@/lib/courrier/model";
+import { readDeliverySummary, receiptsDue } from "@/lib/courrier/push";
 import { ratio, type Insight } from "@/lib/insights";
 import { formatValue } from "@/lib/views";
 export const dynamic="force-dynamic"; export const revalidate=0;
@@ -25,10 +26,14 @@ export default async function CourrierDetailPage({params,searchParams}:SearchPro
   const back=<Link className="mb-4 inline-block text-sm text-[#CDA1F9] underline underline-offset-4" href={`/dashboard/courrier${preview?"?apercu=1":""}`}>← Tous les envois</Link>;
   if(!results.data) return <>{back}<PreviewBanner preview={preview}/><PageHeader title="Envoi introuvable" description="La base n'a pas rendu cet envoi."/><Findings items={[{text:"La lecture de l'envoi a échoué : la base n'a pas répondu.",source:"lucid_admin_results",window:"État actuel"}]}/></>;
   const {post,reads,votes,voters,replies}=results.data;
+  const delivery=preview||!post.push_sent_at?null:await readDeliverySummary(post.id);
+  const receipts=!delivery||delivery.targets===0?"none":delivery.pending>0?"pending":"done";
+  const due=receiptsDue(delivery,post.push_sent_at);
   const fromStudents=replies.filter(r=>!r.from_staff);
   const options=(post.options??[]).map(o=>({label:o.label,voix:votes[o.id]??0}));
   const insights:Insight[]=[
     {text:post.status!=="published"?`${STATUS_LABELS[post.status]} : les élèves ne le voient pas${post.status==="draft"?" encore":" plus"}.`:`${reads} élève${reads>1?"s ont":" a"} ouvert cet envoi${post.push_sent_at?`, notification envoyée le ${formatValue(post.push_sent_at)}`:", aucune notification envoyée"}.`,source:"lucid_post_reads · lucid_posts.push_sent_at",window:"Depuis la publication"},
+    ...(delivery&&delivery.targets>0?[{text:describeDelivery(delivery)+(delivery.pending>0?due?" Les reçus sont mûrs : « Vérifier la livraison » dit ce qu'Apple et Google ont accepté.":" Les reçus se lisent un quart d'heure après l'envoi.":""),source:"push_deliveries · reçus Expo",window:"Dernier envoi",tone:(delivery.refused+delivery.failed>0?"alerte":"calme") as "alerte"|"calme"}]:[]),
     post.kind==="poll"
       ?{text:voters>0?`${voters} votant${voters>1?"s":""}, soit ${ratio(voters,Math.max(reads,voters))} des élèves qui ont ouvert. En tête : ${[...options].sort((a,b)=>b.voix-a.voix)[0]?.label??"aucune option"}.`:"Aucun vote pour l'instant.",source:"lucid_post_votes",window:"Depuis la publication"}
       :{text:fromStudents.length>0?`${fromStudents.length} réponse${fromStudents.length>1?"s":""} d'élèves, ${new Set(fromStudents.map(r=>r.profile_id)).size} fil${new Set(fromStudents.map(r=>r.profile_id)).size>1?"s":""} ouvert${new Set(fromStudents.map(r=>r.profile_id)).size>1?"s":""}. Chaque réponse de l'équipe repasse l'envoi en non lu chez l'élève.`:"Aucune réponse d'élève pour l'instant.",source:"lucid_post_replies",window:"Depuis la publication"},
@@ -48,7 +53,7 @@ export default async function CourrierDetailPage({params,searchParams}:SearchPro
           <div><dt className="font-semibold text-[#CDC8D6]">Réponses des élèves</dt><dd>{post.allow_reply?"autorisées":"fermées"}</dd></div>
           <div><dt className="font-semibold text-[#CDC8D6]">Identifiant</dt><dd className="font-mono">{post.id}</dd></div>
         </dl>
-        <div className="mt-5 border-t border-[#332D3D] pt-4"><PostActions post={post} preview={preview}/></div>
+        <div className="mt-5 border-t border-[#332D3D] pt-4"><PostActions post={post} preview={preview} receipts={receipts}/></div>
       </ViewPanel>
       <div className="grid gap-5">
         <div className="grid gap-3 sm:grid-cols-2">

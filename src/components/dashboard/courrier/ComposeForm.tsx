@@ -31,28 +31,30 @@ function Fields({ preview, profiles, reach, action, pending }:{ preview:boolean;
   const [body, setBody] = useState("");
   const [notify, setNotify] = useState(true);
   const [custom, setCustom] = useState(false);
+  const [versionLt, setVersionLt] = useState("");
   const timer = useRef<ReturnType<typeof setTimeout>|null>(null);
 
   const classes = [...new Set(profiles.map(p=>p.class_name).filter((c):c is string=>!!c))].sort((a,b)=>a.localeCompare(b,"fr"));
   const schools = [...new Set(profiles.map(p=>p.school_name).filter((s):s is string=>!!s))].sort((a,b)=>a.localeCompare(b,"fr"));
 
   // Le comptage part 350 ms après la dernière frappe, jamais depuis un effet.
-  function schedule(nextMode:AudienceMode, nextValue:string) {
+  function schedule(nextMode:AudienceMode, nextValue:string, nextVersion:string) {
     if (timer.current) clearTimeout(timer.current);
-    if (nextMode==="tous") { setCount(reach); return; }
-    if (!nextValue.trim()) { setCount(null); return; }
+    if (nextMode==="tous" && !nextVersion.trim()) { setCount(reach); return; }
+    if (nextMode!=="tous" && !nextValue.trim()) { setCount(null); return; }
     if (preview) { setCount({ eleves:12, joignables:7 }); return; }
     setCount("pending");
-    timer.current = setTimeout(()=>{ void previewAudience(nextMode, nextValue).then(setCount); }, 350);
+    timer.current = setTimeout(()=>{ void previewAudience(nextMode, nextValue, nextVersion).then(setCount); }, 350);
   }
-  const pickMode = (next:AudienceMode) => { setMode(next); setValue(""); setGrades([]); schedule(next, ""); };
-  const pickValue = (next:string) => { setValue(next); schedule(mode, next); };
-  const toggleGrade = (grade:Grade) => { const next = grades.includes(grade) ? grades.filter(g=>g!==grade) : [...grades, grade]; setGrades(next); schedule("niveau", next.join(",")); };
+  const pickMode = (next:AudienceMode) => { setMode(next); setValue(""); setGrades([]); schedule(next, "", versionLt); };
+  const pickValue = (next:string) => { setValue(next); schedule(mode, next, versionLt); };
+  const toggleGrade = (grade:Grade) => { const next = grades.includes(grade) ? grades.filter(g=>g!==grade) : [...grades, grade]; setGrades(next); schedule("niveau", next.join(","), versionLt); };
+  const pickVersion = (next:string) => { setVersionLt(next); schedule(mode, audienceValue, next); };
   // Les niveaux voyagent dans le même champ que la classe ou le lycée, séparés par des virgules.
   const audienceValue = mode==="niveau" ? grades.join(",") : value;
 
   const countLine = count==="pending" ? "Comptage…" : count===null ? (mode==="tous" ? "Effectif indisponible pour l'instant." : mode==="niveau" ? "Choisis un ou plusieurs niveaux pour compter." : mode==="classe" ? "Indique une classe pour compter." : mode==="etablissement" ? "Indique un lycée pour compter." : "Choisis un profil pour compter.")
-    : count.eleves===0 ? "Personne ne correspond." : `${count.eleves} élève${count.eleves>1?"s verront":" verra"} le message · ${count.joignables} ${count.joignables>1?"recevront":"recevra"} la notification`;
+    : count.eleves===0 ? "Personne ne correspond." : `${count.eleves} élève${count.eleves>1?"s verront":" verra"} le message · ${count.joignables} appareil${count.joignables>1?"s recevront":" recevra"} la notification`;
 
   return <fieldset disabled={preview||pending} className="contents">
     <form action={action} className="grid gap-5">
@@ -90,6 +92,10 @@ function Fields({ preview, profiles, reach, action, pending }:{ preview:boolean;
           <datalist id="audience-profil">{profiles.map(p=><option key={p.id} value={p.id}>{[p.full_name,p.class_name].filter(Boolean).join(" · ")}</option>)}</datalist>
         </>}
         <p className={`text-sm ${count!=="pending"&&count!==null&&count.eleves===0?"text-[#FFA1AC]":"text-[#A8A0B4]"}`}>{countLine}</p>
+        <label className="grid gap-1 text-xs text-[#A8A0B4]">
+          <span>Notification réservée aux appareils qui n’ont pas encore ouvert la version… <span className="text-[#6E6680]">(facultatif : pour dire « la mise à jour est là » à ceux qui ne l’ont pas vue)</span></span>
+          <input name="app_version_lt" value={versionLt} onChange={e=>pickVersion(e.target.value)} inputMode="decimal" pattern="\d+(\.\d+){1,3}" placeholder="2.1.0" className={`${field} max-w-[180px] bg-[#1D1822]`} aria-label="Version de l'app en dessous de laquelle notifier"/>
+        </label>
       </section>
 
       <section className="grid gap-3 rounded-2xl border border-[#332D3D] bg-[#09060C] p-4">
