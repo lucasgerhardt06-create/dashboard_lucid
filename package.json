@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:insights": "node --test tests/insights.test.cjs",
+    "test:insights": "node --test tests/insights.test.cjs tests/courrier.test.cjs",
     "verify:preview": "node tests/render-preview.cjs"
   },
   "dependencies": {

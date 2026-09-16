@@ -35,7 +35,7 @@ function load(filename){
  cookie=auth.createSessionToken();
  const output=path.join(root,'docs/verification-apercu');fs.mkdirSync(output,{recursive:true});
  const summaries=[];
- for(const page of ['', 'retention','entonnoir','services','ia','banque','rituel','amis','eleves','courrier','support','erreurs','configuration','eleves/[id]']){
+ for(const page of ['', 'retention','entonnoir','services','ia','banque','rituel','amis','eleves','courrier','courrier/[id]','support','erreurs','configuration','eleves/[id]']){
   const component=load(path.join(root,'src/app/dashboard',page,'page.tsx')).default;
   let tree=await component({searchParams:Promise.resolve({apercu:'1'}),params:Promise.resolve({id:'fixture-0'})});
   // Resolve the async shared Server Component in the seven thin route pages.

@@ -2,86 +2,92 @@
   "pages": [
     {
       "page": "/dashboard",
-      "svg": 11,
-      "bytes": 67405,
+      "svg": 0,
+      "bytes": 25337,
       "status": "Rendu serveur validé"
     },
     {
       "page": "/dashboard/retention",
-      "svg": 7,
-      "bytes": 47640,
+      "svg": 0,
+      "bytes": 12785,
       "status": "Rendu serveur validé"
     },
     {
       "page": "/dashboard/entonnoir",
-      "svg": 9,
-      "bytes": 52345,
+      "svg": 0,
+      "bytes": 9926,
       "status": "Rendu serveur validé"
     },
     {
       "page": "/dashboard/services",
-      "svg": 4,
-      "bytes": 27039,
+      "svg": 0,
+      "bytes": 7998,
       "status": "Rendu serveur validé"
     },
     {
       "page": "/dashboard/ia",
-      "svg": 24,
-      "bytes": 120938,
+      "svg": 0,
+      "bytes": 16832,
       "status": "Rendu serveur validé"
     },
     {
       "page": "/dashboard/banque",
-      "svg": 2,
-      "bytes": 18034,
+      "svg": 0,
+      "bytes": 12991,
       "status": "Rendu serveur validé"
     },
     {
       "page": "/dashboard/rituel",
-      "svg": 9,
-      "bytes": 46244,
+      "svg": 0,
+      "bytes": 12386,
       "status": "Rendu serveur validé"
     },
     {
       "page": "/dashboard/amis",
-      "svg": 2,
-      "bytes": 11493,
+      "svg": 1,
+      "bytes": 6496,
       "status": "Rendu serveur validé"
     },
     {
       "page": "/dashboard/eleves",
       "svg": 1,
-      "bytes": 164443,
+      "bytes": 100107,
       "status": "Rendu serveur validé"
     },
     {
       "page": "/dashboard/courrier",
+      "svg": 1,
+      "bytes": 15103,
+      "status": "Rendu serveur validé"
+    },
+    {
+      "page": "/dashboard/courrier/[id]",
       "svg": 0,
-      "bytes": 6682,
+      "bytes": 8450,
       "status": "Rendu serveur validé"
     },
     {
       "page": "/dashboard/support",
       "svg": 0,
-      "bytes": 3033,
+      "bytes": 3024,
       "status": "Rendu serveur validé"
     },
     {
       "page": "/dashboard/erreurs",
-      "svg": 5,
-      "bytes": 29581,
+      "svg": 0,
+      "bytes": 10304,
       "status": "Rendu serveur validé"
     },
     {
       "page": "/dashboard/configuration",
       "svg": 0,
-      "bytes": 6056,
+      "bytes": 7376,
       "status": "Rendu serveur validé"
     },
     {
       "page": "/dashboard/eleves/[id]",
-      "svg": 2,
-      "bytes": 19417,
+      "svg": 0,
+      "bytes": 4642,
       "status": "Rendu serveur validé"
     }
   ],

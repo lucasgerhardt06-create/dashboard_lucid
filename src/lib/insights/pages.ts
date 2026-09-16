@@ -1,9 +1,18 @@
-import type { Post, Config, Banner, ViewResult, FeedbackSupport, Profile, DailyXp, ProfileDetail, PupilBadge, Friendship } from "../views";
+import type { Config, Banner, ViewResult, FeedbackSupport, Profile, DailyXp, ProfileDetail, PupilBadge, Friendship } from "../views";
 import type { geography } from "./geography";
 import type { networkStats, NetworkData } from "./network";
 import { number, sum, type Insight } from "./index";
+import type { AdminPost, AudienceCount } from "@/lib/courrier/model";
 
-export function courrierInsights(posts:Post[], error:boolean):Insight[] {return [{text:error?"Les courriers n’ont pas répondu.":`Brouillons : ${posts.filter(p=>p.status==="draft").length} sur ${posts.length} courriers affichés.`,source:"lucid_posts",window:"50 derniers courriers"},{text:error?"Les états d’envoi sont indisponibles.":`${posts.filter(p=>p.push_sent_at).length} courriers affichés portent une date d’envoi push. L’envoi se fait depuis l’app.`,source:"lucid_posts.push_sent_at",window:"50 derniers courriers"}];}
+export function courrierInsights(posts:AdminPost[], reach:AudienceCount|null, error:boolean):Insight[] {
+  const published=posts.filter(p=>p.status==="published"), drafts=posts.filter(p=>p.status==="draft"), notified=published.filter(p=>p.push_sent_at);
+  const last=[...published].sort((a,b)=>b.publish_at.localeCompare(a.publish_at))[0];
+  const reads=sum(published,"reads");
+  return [
+    {text:error||!reach?"Les effectifs n'ont pas répondu : impossible de dire qui recevrait un envoi.":`${reach.eleves} élèves ont l'app ; ${reach.joignables} ont un appareil enregistré et recevraient une notification (${reach.eleves-reach.joignables} la liraient seulement en ouvrant la messagerie).`,source:"lucid_admin_audience_count",window:"État actuel",tone:!error&&reach&&reach.joignables<reach.eleves/2?"alerte":"calme"},
+    {text:error?"Les envois n'ont pas répondu.":published.length===0?`Aucun envoi publié pour l'instant${drafts.length?`, ${drafts.length} brouillon${drafts.length>1?"s":""} en attente`:""}.`:`${published.length} envoi${published.length>1?"s":""} publié${published.length>1?"s":""}, ${notified.length} avec notification, ${reads} lecture${reads>1?"s":""} en tout. Dernier : « ${last?.title} », ${last?.reads??0} lecture${(last?.reads??0)>1?"s":""}${last?.kind==="poll"?`, ${last.voters} votant${last.voters>1?"s":""}`:""}, ${last?.replies??0} réponse${(last?.replies??0)>1?"s":""}.`,source:"lucid_admin_posts",window:"100 derniers envois"},
+  ];
+}
 
 export function configurationInsights(config:Config[], banners:Banner[], error:boolean, bannerError:boolean):Insight[] {return [{text:error?"La configuration n’a pas répondu.":`${config.length} clés de configuration chargées. Maintenance : ${config.find(c=>c.key==="maintenance_mode")?.value==="true"?`active pour les versions jusqu’à ${config.find(c=>c.key==="maintenance_max_version")?.value??"toutes"} (les plus récentes passent)`:config.find(c=>c.key==="maintenance_mode")?.value==="false"?"inactive":"non renseignée"}.`,source:"app_config",window:"État actuel"},{text:bannerError?"Les bandeaux n’ont pas répondu.":`Bandeaux actifs : ${banners.filter(b=>b.active).length} sur ${banners.length} affichés.`,source:"app_banners",window:"50 premiers bandeaux"}];}
 
